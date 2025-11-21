@@ -1,0 +1,1694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dreams & Nightmares Stacker Tracker</title>
+    
+    <!-- WebApp Icon -->
+    <link rel="icon" type="image/x-icon" href="https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bj35VTqVBP4io_frnIV7Kb5OaU-JqfHDzXFle0u4LY8Gy_kkRgisGzcm4v4J3vDOAQmDMdyRvlK7EcmeCU3yw/330x192?allow_animated=1">
+    <link rel="apple-touch-icon" href="https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bj35VTqVBP4io_frnIV7Kb5OaU-JqfHDzXFle0u4LY8Gy_kkRgisGzcm4v4J3vDOAQmDMdyRvlK7EcmeCU3yw/330x192?allow_animated=1">
+    
+    <!-- WebApp Manifest for PWA -->
+    <link rel="manifest" href="data:application/manifest+json,{
+        \"name\": \"Dreams & Nightmares Stacker Tracker\",
+        \"short_name\": \"D&N Tracker\",
+        \"description\": \"Track your Dreams & Nightmares Case collection progress\",
+        \"start_url\": \"./\",
+        \"display\": \"standalone\",
+        \"background_color\": \"#0a1428\",
+        \"theme_color\": \"#9d4edd\",
+        \"icons\": [
+            {
+                \"src\": \"https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bj35VTqVBP4io_frnIV7Kb5OaU-JqfHDzXFle0u4LY8Gy_kkRgisGzcm4v4J3vDOAQmDMdyRvlK7EcmeCU3yw/330x192?allow_animated=1\",
+                \"sizes\": \"192x192\",
+                \"type\": \"image/png\"
+            },
+            {
+                \"src\": \"https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bj35VTqVBP4io_frnIV7Kb5OaU-JqfHDzXFle0u4LY8Gy_kkRgisGzcm4v4J3vDOAQmDMdyRvlK7EcmeCU3yw/330x192?allow_animated=1\",
+                \"sizes\": \"512x512\",
+                \"type\": \"image/png\"
+            }
+        ]
+    }">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        html, body {
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        body {
+            min-height: 100vh;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(22, 45, 78, 0.8) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(78, 22, 45, 0.6) 0%, transparent 50%),
+                linear-gradient(135deg, #0a1428 0%, #1a2d4a 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            padding: 20px 0;
+        }
+
+        /* Currency Selector - Top Right */
+        .currency-selector {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(16, 26, 41, 0.8);
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: 1px solid rgba(101, 147, 213, 0.3);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        .currency-selector:hover {
+            background: rgba(16, 26, 41, 0.95);
+            border-color: rgba(101, 147, 213, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .currency-label {
+            font-size: 0.7rem;
+            color: #b8c6d8;
+            white-space: nowrap;
+        }
+
+        .currency-dropdown {
+            background: rgba(22, 33, 51, 0.9);
+            border: 1px solid rgba(101, 147, 213, 0.4);
+            border-radius: 3px;
+            color: white;
+            padding: 4px 8px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .currency-dropdown:hover {
+            border-color: rgba(101, 147, 213, 0.7);
+        }
+
+        .currency-dropdown:focus {
+            border-color: #6593d5;
+            box-shadow: 0 0 8px rgba(101, 147, 213, 0.5);
+        }
+
+        /* Holy Figures - 50% SMALLER */
+        .holy-figure {
+            position: fixed;
+            bottom: 0;
+            height: 30vh; /* 50% smaller than before (60vh) */
+            z-index: 5;
+            filter: drop-shadow(0 0 20px rgba(228, 174, 74, 0.8));
+            opacity: 0.9;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .holy-right {
+            right: 50px;
+        }
+
+        /* Steam Logo Container */
+        .steam-container {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .steam-logo {
+            height: 60px;
+            width: auto;
+            filter: drop-shadow(0 0 10px rgba(101, 147, 213, 0.6));
+            transition: all 0.3s ease;
+        }
+
+        .support-text {
+            color: #b8c6d8;
+            font-size: 1rem;
+            font-weight: 500;
+            text-shadow: 0 0 10px rgba(101, 147, 213, 0.5);
+            transition: all 0.3s ease;
+            background: rgba(16, 26, 41, 0.7);
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid rgba(101, 147, 213, 0.3);
+        }
+
+        /* PERMANENT Animation (always running) */
+        .holy-right {
+            animation: holyFloatRight 3s ease-in-out infinite 1.5s;
+        }
+
+        .steam-container {
+            animation: steamFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes holyFloatRight {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        @keyframes steamFloat {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* Hover effect as bonus */
+        .holy-figure:hover {
+            filter: drop-shadow(0 0 30px rgba(228, 174, 74, 1));
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+        .steam-container:hover {
+            transform: translateY(-5px) scale(1.05);
+        }
+
+        .steam-container:hover .steam-logo {
+            filter: drop-shadow(0 0 20px rgba(101, 147, 213, 0.9));
+        }
+
+        .steam-container:hover .support-text {
+            color: #ffffff;
+            text-shadow: 0 0 15px rgba(101, 147, 213, 0.8);
+            background: rgba(16, 26, 41, 0.9);
+            border-color: rgba(101, 147, 213, 0.6);
+        }
+
+        /* Click animation */
+        .holy-figure:active {
+            transform: scale(0.95);
+        }
+
+        .steam-container:active {
+            transform: scale(0.95);
+        }
+
+        /* CS2 styling for the container */
+        #container {
+            width: 90%;
+            max-width: 600px;
+            background: rgba(16, 26, 41, 0.85);
+            padding: 30px;
+            border-radius: 8px;
+            border: 1px solid rgba(101, 147, 213, 0.3);
+            box-shadow: 
+                0 0 30px rgba(0, 0, 0, 0.7),
+                0 0 15px rgba(101, 147, 213, 0.2);
+            position: relative;
+            z-index: 10;
+            backdrop-filter: blur(5px);
+            margin-bottom: 20px;
+        }
+
+        /* CS2 styling for the title - NEW GOLDEN ANIMATION */
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            background: linear-gradient(to right, #e4ae4a, #f8d568, #ffeb99, #f8d568, #e4ae4a);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 
+                0 0 10px rgba(228, 174, 74, 0.3),
+                0 0 20px rgba(228, 174, 74, 0.2),
+                0 0 30px rgba(228, 174, 74, 0.1);
+            font-weight: 700;
+            animation: 
+                goldGlow 3s ease-in-out infinite alternate,
+                textFloat 4s ease-in-out infinite;
+            position: relative;
+            display: inline-block;
+        }
+
+        /* Golden glow animation */
+        @keyframes goldGlow {
+            0% {
+                background-position: 0% center;
+                text-shadow: 
+                    0 0 10px rgba(228, 174, 74, 0.3),
+                    0 0 20px rgba(228, 174, 74, 0.2),
+                    0 0 30px rgba(228, 174, 74, 0.1);
+            }
+            50% {
+                background-position: 100% center;
+                text-shadow: 
+                    0 0 15px rgba(228, 174, 74, 0.5),
+                    0 0 30px rgba(228, 174, 74, 0.3),
+                    0 0 45px rgba(228, 174, 74, 0.2);
+            }
+            100% {
+                background-position: 0% center;
+                text-shadow: 
+                    0 0 10px rgba(228, 174, 74, 0.3),
+                    0 0 20px rgba(228, 174, 74, 0.2),
+                    0 0 30px rgba(228, 174, 74, 0.1);
+            }
+        }
+
+        /* Floating animation */
+        @keyframes textFloat {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            25% {
+                transform: translateY(-3px) rotate(0.5deg);
+            }
+            50% {
+                transform: translateY(-5px) rotate(0deg);
+            }
+            75% {
+                transform: translateY(-2px) rotate(-0.5deg);
+            }
+        }
+
+        /* Golden pulse effect for important texts */
+        .gold-text {
+            color: #e4ae4a;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(228, 174, 74, 0.5);
+            animation: goldPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes goldPulse {
+            0%, 100% {
+                text-shadow: 0 0 10px rgba(228, 174, 74, 0.5);
+                transform: scale(1);
+            }
+            50% {
+                text-shadow: 0 0 20px rgba(228, 174, 74, 0.8), 0 0 30px rgba(228, 174, 74, 0.4);
+                transform: scale(1.02);
+            }
+        }
+
+        /* Case Image Container with Animations */
+        .case-container {
+            position: relative;
+            display: inline-block;
+            margin: 0 auto 20px auto;
+        }
+
+        .case-image {
+            width: 120px;
+            height: 120px;
+            background-image: url('https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bj35VTqVBP4io_frnIV7Kb5OaU-JqfHDzXFle0u4LY8Gy_kkRgisGzcm4v4J3vDOAQmDMdyRvlK7EcmeCU3yw/330x192?allow_animated=1');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            filter: drop-shadow(0 0 10px rgba(228, 174, 74, 0.4));
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        /* Hover effect for case image */
+        .case-image:hover {
+            filter: drop-shadow(0 0 20px rgba(228, 174, 74, 0.8));
+            transform: scale(1.05);
+        }
+
+        .case-image:active {
+            transform: scale(0.95);
+        }
+
+        /* Animation for added cases - LONGER */
+        .case-add-animation {
+            animation: caseAdd 1.6s ease-out;
+        }
+
+        .case-add-glow {
+            box-shadow: 
+                0 0 25px #00ff9d,
+                0 0 50px #00ff9d,
+                0 0 80px #00ff9d,
+                inset 0 0 20px rgba(0, 255, 157, 0.4);
+        }
+
+        /* Animation for removed cases - LONGER */
+        .case-remove-animation {
+            animation: caseRemove 1.2s ease-in-out;
+        }
+
+        .case-remove-glow {
+            box-shadow: 
+                0 0 25px #ff4444,
+                0 0 50px #ff4444,
+                inset 0 0 20px rgba(255, 68, 68, 0.4);
+        }
+
+        /* Plus/Minus Animation - LONGER */
+        .quantity-indicator {
+            position: absolute;
+            top: 50%;
+            right: -40px;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-shadow: 0 0 10px currentColor;
+            animation: quantityFloat 2s ease-out forwards;
+            z-index: 20;
+        }
+
+        .quantity-positive {
+            color: #00ff9d;
+        }
+
+        .quantity-negative {
+            color: #ff4444;
+        }
+
+        @keyframes caseAdd {
+            0% {
+                transform: scale(1);
+                filter: drop-shadow(0 0 10px rgba(228, 174, 74, 0.4));
+            }
+            25% {
+                transform: scale(1.2);
+                filter: drop-shadow(0 0 35px #00ff9d);
+            }
+            50% {
+                transform: scale(1.15);
+                filter: drop-shadow(0 0 50px #00ff9d);
+            }
+            75% {
+                transform: scale(1.1);
+                filter: drop-shadow(0 0 30px #00ff9d);
+            }
+            100% {
+                transform: scale(1);
+                filter: drop-shadow(0 0 10px rgba(228, 174, 74, 0.4));
+            }
+        }
+
+        @keyframes caseRemove {
+            0% {
+                transform: translateX(0) rotate(0deg);
+            }
+            20% {
+                transform: translateX(-8px) rotate(-8deg);
+            }
+            40% {
+                transform: translateX(8px) rotate(8deg);
+            }
+            60% {
+                transform: translateX(-6px) rotate(-6deg);
+            }
+            80% {
+                transform: translateX(4px) rotate(4deg);
+            }
+            100% {
+                transform: translateX(0) rotate(0deg);
+            }
+        }
+
+        @keyframes quantityFloat {
+            0% {
+                opacity: 0;
+                transform: translateY(-50%) scale(0.5);
+            }
+            30% {
+                opacity: 1;
+                transform: translateY(-80%) scale(1.3);
+            }
+            70% {
+                opacity: 0.8;
+                transform: translateY(-120%) scale(1.1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-150%) scale(0.8);
+            }
+        }
+
+        /* Quick Buttons */
+        .quick-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 25px;
+        }
+
+        .quick-btn {
+            flex: 1;
+            padding: 12px;
+            background: rgba(101, 147, 213, 0.2);
+            border: 1px solid rgba(101, 147, 213, 0.4);
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        .quick-btn:hover {
+            background: rgba(101, 147, 213, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* CS2 styling for the Progressbar */
+        #bar-wrapper {
+            width: 100%;
+            height: 40px;
+            background: rgba(22, 33, 51, 0.8);
+            margin-top: 25px;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid rgba(101, 147, 213, 0.3);
+            position: relative;
+        }
+
+        #bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, #9d4edd, #c77dff);
+            transition: width 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 15px rgba(157, 78, 221, 0.5);
+        }
+
+        /* Progressbar Animations - LONGER */
+        .progress-add-animation {
+            animation: progressAdd 2s ease-out;
+        }
+
+        .progress-remove-animation {
+            animation: progressRemove 1.6s ease-out;
+        }
+
+        @keyframes progressAdd {
+            0% {
+                box-shadow: 0 0 15px rgba(157, 78, 221, 0.5);
+            }
+            25% {
+                box-shadow: 
+                    0 0 40px #00ff9d,
+                    0 0 80px #00ff9d,
+                    0 0 120px #00ff9d,
+                    inset 0 0 30px rgba(0, 255, 157, 0.6);
+                background: linear-gradient(to right, #00ff9d, #00d4ff, #00ff9d);
+            }
+            50% {
+                box-shadow: 
+                    0 0 50px #00ff9d,
+                    0 0 100px #00ff9d,
+                    0 0 150px #00ff9d,
+                    inset 0 0 40px rgba(0, 255, 157, 0.8);
+                background: linear-gradient(to right, #00ff9d, #00d4ff);
+            }
+            75% {
+                box-shadow: 
+                    0 0 30px #00ff9d,
+                    0 0 60px #00ff9d,
+                    inset 0 0 25px rgba(0, 255, 157, 0.5);
+                background: linear-gradient(to right, #00ff9d, #c77dff);
+            }
+            100% {
+                box-shadow: 0 0 15px rgba(157, 78, 221, 0.5);
+            }
+        }
+
+        @keyframes progressRemove {
+            0% {
+                box-shadow: 0 0 15px rgba(157, 78, 221, 0.5);
+            }
+            25% {
+                box-shadow: 
+                    0 0 40px #ff4444,
+                    0 0 80px #ff4444,
+                    inset 0 0 30px rgba(255, 68, 68, 0.6);
+                background: linear-gradient(to right, #ff4444, #ff6b6b, #ff4444);
+            }
+            50% {
+                box-shadow: 
+                    0 0 50px #ff4444,
+                    0 0 100px #ff4444,
+                    inset 0 0 40px rgba(255, 68, 68, 0.8);
+                background: linear-gradient(to right, #ff4444, #ff6b6b);
+            }
+            75% {
+                box-shadow: 
+                    0 0 30px #ff4444,
+                    0 0 60px #ff4444,
+                    inset 0 0 25px rgba(255, 68, 68, 0.5);
+                background: linear-gradient(to right, #ff4444, #c77dff);
+            }
+            100% {
+                box-shadow: 0 0 15px rgba(157, 78, 221, 0.5);
+            }
+        }
+
+        /* CS2 styling for the text below the Progressbar */
+        #text {
+            margin-top: 15px;
+            font-size: 1.2rem;
+            color: #b8c6d8;
+            font-weight: 500;
+        }
+
+        /* Price Display Container */
+        .price-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            gap: 15px;
+        }
+
+        .price-box {
+            flex: 1;
+            background: rgba(22, 33, 51, 0.8);
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid rgba(101, 147, 213, 0.3);
+        }
+
+        .price-label {
+            font-size: 0.9rem;
+            color: #b8c6d8;
+            margin-bottom: 8px;
+        }
+
+        .price-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #e4ae4a;
+            animation: goldPulse 2s ease-in-out infinite;
+        }
+
+        .price-currency {
+            font-size: 0.9rem;
+            color: #b8c6d8;
+        }
+
+        /* Manual Price Input */
+        .price-input-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .price-input {
+            flex: 1;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(101, 147, 213, 0.5);
+            background: rgba(22, 33, 51, 0.8);
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .price-input:focus {
+            outline: none;
+            border-color: #6593d5;
+            box-shadow: 0 0 10px rgba(101, 147, 213, 0.5);
+        }
+
+        .set-price-btn {
+            padding: 8px 16px;
+            background: rgba(101, 147, 213, 0.3);
+            border: 1px solid rgba(101, 147, 213, 0.5);
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .set-price-btn:hover {
+            background: rgba(101, 147, 213, 0.5);
+        }
+
+        /* Floating background system */
+        #float-container {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .float-img {
+            position: absolute;
+            bottom: -200px;
+            opacity: 0.15;
+            animation: floatUp 20s linear infinite;
+            filter: drop-shadow(0 0 5px rgba(228, 174, 74, 0.5));
+            max-width: 120px;
+            max-height: 120px;
+            border-radius: 4px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        @keyframes floatUp {
+            0% { 
+                transform: translateY(0) rotate(0deg) scale(0.8); 
+                opacity: 0.1; 
+            }
+            100% { 
+                transform: translateY(-120vh) rotate(10deg) scale(1); 
+                opacity: 0.25; 
+            }
+        }
+
+        /* Decorative Elements */
+        .corner-decoration {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: 2px solid rgba(228, 174, 74, 0.5);
+        }
+
+        .corner-tl {
+            top: 10px;
+            left: 10px;
+            border-right: none;
+            border-bottom: none;
+        }
+
+        .corner-tr {
+            top: 10px;
+            right: 10px;
+            border-left: none;
+            border-bottom: none;
+        }
+
+        .corner-bl {
+            bottom: 10px;
+            left: 10px;
+            border-right: none;
+            border-top: none;
+        }
+
+        .corner-br {
+            bottom: 10px;
+            right: 10px;
+            border-left: none;
+            border-top: none;
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            gap: 10px;
+        }
+
+        .stat-item {
+            flex: 1;
+            font-size: 0.8rem;
+            color: #b8c6d8;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            color: #e4ae4a;
+            animation: goldPulse 3s ease-in-out infinite;
+        }
+
+        /* Previous Total Values Container - ENLARGED */
+        .history-container {
+            width: 90%;
+            max-width: 600px;
+            background: rgba(16, 26, 41, 0.85);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(101, 147, 213, 0.3);
+            box-shadow: 
+                0 0 30px rgba(0, 0, 0, 0.7),
+                0 0 15px rgba(101, 147, 213, 0.2);
+            position: relative;
+            z-index: 10;
+            backdrop-filter: blur(5px);
+            margin-top: 20px;
+            margin-bottom: 40px; /* More space at the bottom */
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .history-title {
+            font-size: 1.3rem;
+            color: #e4ae4a;
+            font-weight: bold;
+            animation: goldPulse 3s ease-in-out infinite;
+        }
+
+        .save-btn {
+            padding: 8px 16px;
+            background: rgba(0, 255, 157, 0.3);
+            border: 1px solid rgba(0, 255, 157, 0.5);
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .save-btn:hover {
+            background: rgba(0, 255, 157, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .history-list {
+            max-height: 300px; /* Higher for more entries */
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        /* Scrollbar Styling */
+        .history-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .history-list::-webkit-scrollbar-track {
+            background: rgba(22, 33, 51, 0.5);
+            border-radius: 3px;
+        }
+
+        .history-list::-webkit-scrollbar-thumb {
+            background: rgba(101, 147, 213, 0.5);
+            border-radius: 3px;
+        }
+
+        .history-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(101, 147, 213, 0.7);
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: rgba(22, 33, 51, 0.6);
+            border-radius: 4px;
+            margin-bottom: 8px;
+            border: 1px solid rgba(101, 147, 213, 0.2);
+        }
+
+        .history-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            flex: 1;
+        }
+
+        .history-date {
+            font-size: 0.9rem;
+            color: #b8c6d8;
+            font-weight: bold;
+        }
+
+        .history-time {
+            font-size: 0.8rem;
+            color: #8fa3bf;
+            margin-top: 2px;
+        }
+
+        .history-cases {
+            font-size: 0.8rem;
+            color: #8fa3bf;
+            margin-top: 2px;
+        }
+
+        .history-price {
+            font-size: 0.8rem;
+            color: #8fa3bf;
+            margin-top: 2px;
+        }
+
+        .history-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #e4ae4a;
+            margin: 0 15px;
+            white-space: nowrap;
+            animation: goldPulse 3s ease-in-out infinite;
+        }
+
+        .history-today-value {
+            font-size: 0.9rem;
+            color: #00ff9d;
+            margin: 0 15px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #ff4444;
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 5px;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            background: rgba(255, 68, 68, 0.2);
+            transform: scale(1.1);
+        }
+
+        .empty-history {
+            text-align: center;
+            color: #b8c6d8;
+            font-style: italic;
+            padding: 20px;
+        }
+
+        /* Data Management Buttons */
+        .data-management {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .data-btn {
+            padding: 10px 15px;
+            background: rgba(157, 78, 221, 0.3);
+            border: 1px solid rgba(157, 78, 221, 0.5);
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .data-btn:hover {
+            background: rgba(157, 78, 221, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .export-btn {
+            background: rgba(0, 255, 157, 0.3);
+            border: 1px solid rgba(0, 255, 157, 0.5);
+        }
+
+        .export-btn:hover {
+            background: rgba(0, 255, 157, 0.5);
+        }
+
+        .import-btn {
+            background: rgba(101, 147, 213, 0.3);
+            border: 1px solid rgba(101, 147, 213, 0.5);
+        }
+
+        .import-btn:hover {
+            background: rgba(101, 147, 213, 0.5);
+        }
+
+        .reset-btn {
+            background: rgba(255, 68, 68, 0.3);
+            border: 1px solid rgba(255, 68, 68, 0.5);
+        }
+
+        .reset-btn:hover {
+            background: rgba(255, 68, 68, 0.5);
+        }
+
+        /* Hidden File Input */
+        #file-input {
+            display: none;
+        }
+
+        /* Backup Notice */
+        .backup-notice {
+            text-align: center;
+            color: #b8c6d8;
+            font-size: 0.8rem;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            #container, .history-container {
+                width: 95%;
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .holy-figure {
+                height: 20vh;
+            }
+            
+            .holy-right {
+                right: 20px;
+            }
+            
+            .steam-container {
+                bottom: 10px;
+                left: 10px;
+            }
+            
+            .steam-logo {
+                height: 50px;
+            }
+            
+            .support-text {
+                font-size: 0.9rem;
+                padding: 6px 10px;
+            }
+            
+            .currency-selector {
+                top: 10px;
+                right: 10px;
+                padding: 5px 8px;
+            }
+            
+            .currency-label {
+                font-size: 0.65rem;
+            }
+            
+            .currency-dropdown {
+                font-size: 0.65rem;
+                padding: 3px 6px;
+            }
+            
+            .price-container {
+                flex-direction: column;
+            }
+            
+            .history-header {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+            
+            .history-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .history-value, .history-today-value {
+                margin: 0;
+                align-self: flex-end;
+            }
+            
+            .data-management {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .quick-buttons {
+                flex-wrap: wrap;
+            }
+            
+            .quick-btn {
+                flex: 1 0 45%;
+            }
+            
+            .history-item {
+                padding: 8px;
+            }
+            
+            .history-value, .history-today-value {
+                font-size: 0.9rem;
+            }
+            
+            .steam-container {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .support-text {
+                font-size: 0.8rem;
+            }
+            
+            .currency-selector {
+                flex-direction: column;
+                gap: 4px;
+                padding: 4px 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Currency Selector - Top Right -->
+<div class="currency-selector">
+    <span class="currency-label">Currency:</span>
+    <select class="currency-dropdown" id="currency-select" onchange="changeCurrency()">
+        <option value="EUR">EUR - Euro</option>
+        <option value="USD">USD - US Dollar</option>
+        <option value="JPY">JPY - Japanese Yen</option>
+        <option value="GBP">GBP - British Pound</option>
+        <option value="CNY">CNY - Chinese Yuan</option>
+        <option value="CAD">CAD - Canadian Dollar</option>
+        <option value="AUD">AUD - Australian Dollar</option>
+        <option value="CHF">CHF - Swiss Franc</option>
+        <option value="INR">INR - Indian Rupee</option>
+        <option value="BRL">BRL - Brazilian Real</option>
+    </select>
+</div>
+
+<!-- Only the right holy figure - 50% smaller and clickable -->
+<div class="holy-figure holy-right" onclick="redirectToVideo()">
+    <img src="https://www.museumderunerhoertendinge.de/images/d300/hofer300.png" 
+         alt="Hofer" 
+         style="height: 100%; width: auto; display: block;">
+</div>
+
+<!-- Steam Logo with Support Text -->
+<div class="steam-container" onclick="redirectToSteam()">
+    <img src="https://logos-world.net/wp-content/uploads/2020/10/Steam-Logo.png" 
+         alt="Steam Logo" 
+         class="steam-logo">
+    <div class="support-text">support me with a skin &lt;3</div>
+</div>
+
+<h1>Dreams & Nightmares Stacker Tracker</h1>
+
+<!-- Floating images -->
+<div id="float-container"></div>
+
+<div id="container">
+    <!-- Decorative Corners -->
+    <div class="corner-decoration corner-tl"></div>
+    <div class="corner-decoration corner-tr"></div>
+    <div class="corner-decoration corner-bl"></div>
+    <div class="corner-decoration corner-br"></div>
+    
+    <!-- Case Image with Animation Container -->
+    <div class="case-container">
+        <div class="case-image" id="case-image" onclick="redirectToSteamMarket()"></div>
+    </div>
+    
+    <!-- Only Quick Buttons - No input field anymore -->
+    <div class="quick-buttons">
+        <button class="quick-btn" onclick="addCases(1)">+1</button>
+        <button class="quick-btn" onclick="addCases(10)">+10</button>
+        <button class="quick-btn" onclick="addCases(50)">+50</button>
+        <button class="quick-btn" onclick="removeCases(1)">-1</button>
+        <button class="quick-btn" onclick="removeCases(10)">-10</button>
+        <button class="quick-btn" onclick="removeCases(50)">-50</button>
+    </div>
+
+    <div id="bar-wrapper">
+        <div id="bar"></div>
+    </div>
+
+    <p id="text"></p>
+
+    <!-- Price Display with Manual Input -->
+    <div class="price-container">
+        <div class="price-box">
+            <div class="price-label">Case Price per Piece</div>
+            <div class="price-value" id="current-price">1.20</div>
+            <div class="price-currency" id="price-currency">EUR</div>
+            
+            <!-- Manual Price Input -->
+            <div class="price-input-container">
+                <input type="number" step="0.01" min="0" class="price-input" id="price-input" placeholder="Price" value="1.20">
+                <button class="set-price-btn" onclick="setManualPrice()">Set Price</button>
+            </div>
+            
+            <div class="stats-container">
+                <div class="stat-item">
+                    <div>Price per Case:</div>
+                    <div class="stat-value" id="price-per-case">1.20</div>
+                </div>
+            </div>
+        </div>
+        <div class="price-box">
+            <div class="price-label">Total Value of Your Cases</div>
+            <div class="price-value" id="total-value">0.00</div>
+            <div class="price-currency" id="total-currency">EUR</div>
+            
+            <!-- Additional Statistics -->
+            <div class="stats-container">
+                <div class="stat-item">
+                    <div>Your Cases:</div>
+                    <div class="stat-value" id="your-cases">0</div>
+                </div>
+                <div class="stat-item">
+                    <div>Remaining:</div>
+                    <div class="stat-value" id="remaining-cases">1000</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Management Buttons -->
+    <div class="data-management">
+        <button class="data-btn export-btn" onclick="exportData()">Export Data</button>
+        <button class="data-btn import-btn" onclick="importData()">Import Data</button>
+        <button class="data-btn reset-btn" onclick="resetData()">Reset Data</button>
+    </div>
+    <div class="backup-notice">
+        Tip: Export your data regularly to back it up!
+    </div>
+</div>
+
+<!-- Previous Total Values Container - ENLARGED -->
+<div class="history-container">
+    <div class="history-header">
+        <div class="history-title">Previous Total Values</div>
+        <button class="save-btn" onclick="saveCurrentValue()">Save Current Value</button>
+    </div>
+    <div class="history-list" id="history-list">
+        <!-- Saved values will be displayed here -->
+    </div>
+</div>
+
+<!-- Hidden File Input for Import -->
+<input type="file" id="file-input" accept=".json">
+
+<script>
+    let currentProgress = 0;
+    let currentPrice = 1.20; // Default price
+    let history = [];
+    let currentCurrency = 'EUR';
+    
+    // Exchange rates (simplified - in a real app you would fetch these from an API)
+    const exchangeRates = {
+        'EUR': 1.00,
+        'USD': 1.08,
+        'JPY': 157.50,
+        'GBP': 0.85,
+        'CNY': 7.75,
+        'CAD': 1.47,
+        'AUD': 1.65,
+        'CHF': 0.95,
+        'INR': 89.20,
+        'BRL': 5.45
+    };
+
+    // Function for redirecting to YouTube video
+    function redirectToVideo() {
+        window.open('https://youtu.be/FQ9HWIj3ooY?si=_LZSZ66fC7rk-yj_&t=561', '_blank');
+    }
+
+    // Function for redirecting to Steam trade
+    function redirectToSteam() {
+        window.open('https://steamcommunity.com/tradeoffer/new/?partner=106314202&token=JgZD-br5', '_blank');
+    }
+
+    // Function for redirecting to Steam Market
+    function redirectToSteamMarket() {
+        window.open('https://steamcommunity.com/market/listings/730/Dreams%20&%20Nightmares%20Case', '_blank');
+    }
+
+    // Change currency
+    function changeCurrency() {
+        const select = document.getElementById('currency-select');
+        currentCurrency = select.value;
+        localStorage.setItem("selectedCurrency", currentCurrency);
+        updatePriceDisplay();
+        updateTotalValue();
+        renderHistory();
+    }
+
+    // Convert price to selected currency
+    function convertPrice(priceInEUR) {
+        return priceInEUR * exchangeRates[currentCurrency];
+    }
+
+    // Format currency based on selected currency
+    function formatCurrency(amount) {
+        const convertedAmount = convertPrice(amount);
+        
+        // Different formatting for different currencies
+        const formats = {
+            'JPY': { maximumFractionDigits: 0 },
+            'INR': { maximumFractionDigits: 0 },
+            'KRW': { maximumFractionDigits: 0 },
+            'default': { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+        };
+        
+        const format = formats[currentCurrency] || formats.default;
+        
+        return convertedAmount.toLocaleString('en-US', format);
+    }
+
+    // Get currency symbol
+    function getCurrencySymbol() {
+        const symbols = {
+            'EUR': '€',
+            'USD': '$',
+            'JPY': '¥',
+            'GBP': '£',
+            'CNY': '¥',
+            'CAD': 'C$',
+            'AUD': 'A$',
+            'CHF': 'CHF',
+            'INR': '₹',
+            'BRL': 'R$'
+        };
+        return symbols[currentCurrency] || currentCurrency;
+    }
+
+    // Load saved progress, price, history and currency
+    window.onload = function() {
+        let saved = localStorage.getItem("progress1000");
+        let savedPrice = localStorage.getItem("casePrice");
+        let savedHistory = localStorage.getItem("valueHistory");
+        let savedCurrency = localStorage.getItem("selectedCurrency");
+        
+        if (saved !== null) {
+            currentProgress = parseInt(saved);
+        }
+        
+        if (savedPrice !== null) {
+            currentPrice = parseFloat(savedPrice);
+            document.getElementById("price-input").value = currentPrice;
+        }
+        
+        if (savedHistory !== null) {
+            history = JSON.parse(savedHistory);
+        }
+        
+        if (savedCurrency !== null) {
+            currentCurrency = savedCurrency;
+            document.getElementById("currency-select").value = currentCurrency;
+        }
+        
+        applyProgress(currentProgress);
+        updatePriceDisplay();
+        updateTotalValue();
+        renderHistory();
+        
+        // Create floating images
+        createFloatingImages();
+    };
+
+    // Save current total value
+    function saveCurrentValue() {
+        const totalValue = parseFloat(document.getElementById('total-value').textContent.replace(/[^\d.-]/g, ''));
+        const currentCases = currentProgress;
+        const now = new Date();
+        
+        const dateString = now.toLocaleDateString('en-US', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+        
+        const timeString = now.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        // Create unique ID for each entry
+        const entryId = Date.now();
+
+        // Add new entry
+        history.unshift({
+            id: entryId,
+            date: dateString,
+            time: timeString,
+            cases: currentCases,
+            price: currentPrice, // Price per case when saving
+            value: totalValue,
+            currency: currentCurrency // Save the currency used
+        });
+
+        // Save history to localStorage
+        localStorage.setItem("valueHistory", JSON.stringify(history));
+        
+        // Re-render history
+        renderHistory();
+        
+        // Success animation
+        const saveBtn = document.querySelector('.save-btn');
+        saveBtn.textContent = '✓ Saved!';
+        saveBtn.style.background = 'rgba(0, 255, 157, 0.5)';
+        
+        setTimeout(() => {
+            saveBtn.textContent = 'Save Current Value';
+            saveBtn.style.background = 'rgba(0, 255, 157, 0.3)';
+        }, 2000);
+    }
+
+    // Delete history entry
+    function deleteHistoryEntry(id) {
+        history = history.filter(entry => entry.id !== id);
+        localStorage.setItem("valueHistory", JSON.stringify(history));
+        renderHistory();
+    }
+
+    // Render history
+    function renderHistory() {
+        const historyList = document.getElementById('history-list');
+        
+        if (history.length === 0) {
+            historyList.innerHTML = '<div class="empty-history">No values saved yet</div>';
+            return;
+        }
+
+        historyList.innerHTML = history.map(entry => {
+            // Calculate today's value based on current price and currency
+            const originalValueEUR = entry.value / exchangeRates[entry.currency || 'EUR'];
+            const todayValue = convertPrice(originalValueEUR);
+            
+            return `
+                <div class="history-item">
+                    <div class="history-info">
+                        <div class="history-date">${entry.date}</div>
+                        <div class="history-time">${entry.time}</div>
+                        <div class="history-cases">${entry.cases} Cases</div>
+                        <div class="history-price">Price then: ${entry.price.toFixed(2)} ${entry.currency || 'EUR'}</div>
+                    </div>
+                    <div class="history-value">${formatCurrency(originalValueEUR)} ${getCurrencySymbol()}</div>
+                    <div class="history-today-value">${formatCurrency(originalValueEUR)} ${getCurrencySymbol()}</div>
+                    <button class="delete-btn" onclick="deleteHistoryEntry(${entry.id})">🗑️</button>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Set manual price
+    function setManualPrice() {
+        const newPrice = parseFloat(document.getElementById("price-input").value);
+        if (!isNaN(newPrice) && newPrice >= 0) {
+            currentPrice = newPrice;
+            localStorage.setItem("casePrice", currentPrice);
+            updatePriceDisplay();
+            updateTotalValue();
+            
+            // Re-render history to update today's values
+            renderHistory();
+            
+            // Small price update animation
+            const priceElement = document.getElementById("current-price");
+            priceElement.style.transform = "scale(1.1)";
+            setTimeout(() => {
+                priceElement.style.transform = "scale(1)";
+            }, 300);
+        }
+    }
+
+    // Update price display
+    function updatePriceDisplay() {
+        document.getElementById("current-price").textContent = formatCurrency(currentPrice);
+        document.getElementById("price-per-case").textContent = formatCurrency(currentPrice) + ' ' + getCurrencySymbol();
+        document.getElementById("price-currency").textContent = getCurrencySymbol();
+        document.getElementById("total-currency").textContent = getCurrencySymbol();
+    }
+
+    // Add cases
+    function addCases(amount) {
+        const newProgress = Math.min(currentProgress + amount, 1000);
+        updateProgressWithAnimation(newProgress, amount);
+    }
+
+    // Remove cases
+    function removeCases(amount) {
+        const newProgress = Math.max(currentProgress - amount, 0);
+        updateProgressWithAnimation(newProgress, -amount);
+    }
+
+    // Update with animation
+    function updateProgressWithAnimation(newProgress, difference) {
+        currentProgress = newProgress;
+        localStorage.setItem("progress1000", currentProgress);
+        applyProgress(currentProgress);
+        updateTotalValue();
+
+        if (difference > 0) {
+            playAddAnimation(difference);
+        } else if (difference < 0) {
+            playRemoveAnimation(Math.abs(difference));
+        }
+    }
+
+    // Animation for added cases - LONGER
+    function playAddAnimation(amount) {
+        const caseImage = document.getElementById('case-image');
+        const progressBar = document.getElementById('bar');
+        const caseContainer = document.querySelector('.case-container');
+
+        // Case Animation
+        caseImage.classList.add('case-add-animation', 'case-add-glow');
+        
+        // Progress Bar Animation
+        progressBar.classList.add('progress-add-animation');
+
+        // Quantity Indicator
+        const indicator = document.createElement('div');
+        indicator.className = `quantity-indicator quantity-positive`;
+        indicator.textContent = `+${amount}`;
+        caseContainer.appendChild(indicator);
+
+        // Cleanup - LONGER DURATION
+        setTimeout(() => {
+            caseImage.classList.remove('case-add-animation', 'case-add-glow');
+            progressBar.classList.remove('progress-add-animation');
+            indicator.remove();
+        }, 2000);
+    }
+
+    // Animation for removed cases - LONGER
+    function playRemoveAnimation(amount) {
+        const caseImage = document.getElementById('case-image');
+        const progressBar = document.getElementById('bar');
+        const caseContainer = document.querySelector('.case-container');
+
+        // Case Animation
+        caseImage.classList.add('case-remove-animation', 'case-remove-glow');
+        
+        // Progress Bar Animation
+        progressBar.classList.add('progress-remove-animation');
+
+        // Quantity Indicator
+        const indicator = document.createElement('div');
+        indicator.className = `quantity-indicator quantity-negative`;
+        indicator.textContent = `-${amount}`;
+        caseContainer.appendChild(indicator);
+
+        // Cleanup - LONGER DURATION
+        setTimeout(() => {
+            caseImage.classList.remove('case-remove-animation', 'case-remove-glow');
+            progressBar.classList.remove('progress-remove-animation');
+            indicator.remove();
+        }, 1600);
+    }
+
+    // Apply progress visually
+    function applyProgress(val) {
+        let percent = (val / 1000) * 100;
+        document.getElementById("bar").style.width = percent + "%";
+        document.getElementById("text").innerText = percent.toFixed(1) + "% (" + val + "/1000)";
+        
+        // Update case statistics
+        document.getElementById("your-cases").textContent = val;
+        document.getElementById("remaining-cases").textContent = 1000 - val;
+    }
+
+    // Create floating images
+    function createFloatingImages() {
+        const container = document.getElementById('float-container');
+        const imageCount = 120;
+        
+        // The two image URLs
+        const imageUrls = [
+            'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bj35VTqVBP4io_frnIV7Kb5OaU-JqfHDzXFle0u4LY8Gy_kkRgisGzcm4v4J3vDOAQmDMdyRvlK7EcmeCU3yw/330x192?allow_animated=1',
+            'https://cdn-icons-png.flaticon.com/512/5924/5924610.png'
+        ];
+        
+        for (let i = 0; i < imageCount; i++) {
+            const img = document.createElement('div');
+            img.className = 'float-img';
+            
+            // Random position and delay
+            const left = Math.random() * 100;
+            const delay = Math.random() * 20;
+            const duration = 15 + Math.random() * 15;
+            
+            img.style.left = left + '%';
+            img.style.animationDelay = delay + 's';
+            img.style.animationDuration = duration + 's';
+            
+            // Random size
+            const size = 30 + Math.random() * 70;
+            img.style.width = size + 'px';
+            img.style.height = size + 'px';
+            
+            // Select random image
+            const randomImage = imageUrls[Math.floor(Math.random() * imageUrls.length)];
+            img.style.backgroundImage = `url('${randomImage}')`;
+            
+            // Random rotation
+            img.style.transform = `rotate(${Math.random() * 30 - 15}deg)`;
+            
+            container.appendChild(img);
+        }
+    }
+
+    // Update total value based on current progress and price
+    function updateTotalValue() {
+        const progress = currentProgress;
+        
+        if (!isNaN(currentPrice) && !isNaN(progress)) {
+            const totalValueEUR = currentPrice * progress;
+            const totalValue = formatCurrency(totalValueEUR);
+            document.getElementById('total-value').textContent = totalValue;
+        }
+    }
+
+    // Export data
+    function exportData() {
+        const data = {
+            currentProgress: currentProgress,
+            currentPrice: currentPrice,
+            history: history,
+            currency: currentCurrency,
+            exportDate: new Date().toISOString()
+        };
+        
+        const dataStr = JSON.stringify(data, null, 2);
+        const dataBlob = new Blob([dataStr], {type: 'application/json'});
+        
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `dn-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        // Success message
+        alert('Data exported successfully!');
+    }
+
+    // Import data
+    function importData() {
+        document.getElementById('file-input').click();
+    }
+
+    // File Input Event Handler
+    document.getElementById('file-input').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                
+                // Validate the data
+                if (data.currentProgress !== undefined && data.currentPrice !== undefined && data.history !== undefined) {
+                    // Get confirmation
+                    if (confirm('Do you want to overwrite the current data with the imported data? This cannot be undone.')) {
+                        currentProgress = data.currentProgress;
+                        currentPrice = data.currentPrice;
+                        history = data.history;
+                        
+                        // Set currency if available in imported data
+                        if (data.currency) {
+                            currentCurrency = data.currency;
+                            document.getElementById("currency-select").value = currentCurrency;
+                        }
+                        
+                        // Save to localStorage
+                        localStorage.setItem("progress1000", currentProgress);
+                        localStorage.setItem("casePrice", currentPrice);
+                        localStorage.setItem("valueHistory", JSON.stringify(history));
+                        localStorage.setItem("selectedCurrency", currentCurrency);
+                        
+                        // Update UI
+                        applyProgress(currentProgress);
+                        updatePriceDisplay();
+                        updateTotalValue();
+                        renderHistory();
+                        document.getElementById("price-input").value = currentPrice;
+                        
+                        alert('Data imported successfully!');
+                    }
+                } else {
+                    alert('Invalid file. Please select a valid backup file.');
+                }
+            } catch (error) {
+                alert('Error reading file: ' + error.message);
+            }
+        };
+        reader.readAsText(file);
+        
+        // Reset file input
+        event.target.value = '';
+    });
+
+    // Reset data
+    function resetData() {
+        if (confirm('Do you really want to reset ALL data? This cannot be undone.')) {
+            currentProgress = 0;
+            currentPrice = 1.20;
+            history = [];
+            
+            // Clear localStorage
+            localStorage.removeItem("progress1000");
+            localStorage.removeItem("casePrice");
+            localStorage.removeItem("valueHistory");
+            
+            // Reset UI
+            applyProgress(currentProgress);
+            updatePriceDisplay();
+            updateTotalValue();
+            renderHistory();
+            document.getElementById("price-input").value = currentPrice;
+            
+            alert('All data has been reset!');
+        }
+    }
+</script>
+
+</body>
+</html>
